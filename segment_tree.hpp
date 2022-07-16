@@ -48,7 +48,17 @@ public:
     return _get(query, {0, n - 1}, 0);
   }
 
-  void update() {}
+  void update(size_t idx, T value) {
+    const size_t n = nums.size();
+    if (n == 0) {
+      throw std::runtime_error("Can't perform element update on a empty tree");
+    }
+    if (idx < 0 || idx >= n) {
+      throw std::out_of_range("Invalid index");
+    }
+
+    _update({0, n - 1}, 0, idx, value);
+  }
 
 private:
   vector tree;
@@ -83,8 +93,22 @@ private:
     }
 
     auto mid = r.first + (r.second - r.first) / 2;
-    auto inter = this->c(_get(query, {r.first, mid}, 2 * idx + 1),
-                         _get(query, {mid + 1, r.second}, 2 * idx + 2));
-    return inter;
+    return this->c(_get(query, {r.first, mid}, 2 * idx + 1),
+                   _get(query, {mid + 1, r.second}, 2 * idx + 2));
+  }
+
+  void _update(range r, size_t curr, size_t idx, T value) {
+    if (r.first == r.second) {
+      this->nums[idx] = value;
+      this->tree[curr] = value;
+    } else {
+      auto mid = r.first + (r.second - r.first) / 2;
+      if (idx <= mid)
+        _update({r.first, mid}, 2 * curr + 1, idx, value);
+      else
+        _update({mid + 1, r.second}, 2 * curr + 2, idx, value);
+
+      tree[curr] = this->c(tree[2 * curr + 1], tree[2 * curr + 2]);
+    }
   }
 };
